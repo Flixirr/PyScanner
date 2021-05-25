@@ -17,6 +17,8 @@ class Ui_Splash(QMainWindow):
                 self.out = list()
                 self.scanned = list()
                 self.configurations = "out.txt"
+                self.thread_config = 100
+                self.worker_config = 500
                 super().__init__()
 
         def setupUi(self):
@@ -120,6 +122,10 @@ class Ui_Splash(QMainWindow):
                 self.menuEdit_save_path.setObjectName("menuEdit_save_path")
                 self.menuClear_result = QtWidgets.QAction(self)
                 self.menuClear_result.setObjectName("menuClear_result")
+
+                self.menuConfig_scanner = QtWidgets.QAction(self)
+                self.menuConfig_scanner.setObjectName("menuConfig_scanner")
+
                 self.setMenuBar(self.menuBar)
                 self.statusBar = QtWidgets.QStatusBar(self)
                 self.statusBar.setObjectName("statusBar")
@@ -127,6 +133,7 @@ class Ui_Splash(QMainWindow):
                 self.menuBar.addAction(self.menuSave_to_file)
                 self.menuBar.addAction(self.menuEdit_save_path)
                 self.menuBar.addAction(self.menuClear_result)
+                self.menuBar.addAction(self.menuConfig_scanner)
 
                 self.retranslateUi(self)
                 QtCore.QMetaObject.connectSlotsByName(self)
@@ -135,6 +142,7 @@ class Ui_Splash(QMainWindow):
                 self.menuClear_result.triggered.connect(lambda: self.clear_res_area())
                 self.menuEdit_save_path.triggered.connect(lambda: self.edit_path())
                 self.menuSave_to_file.triggered.connect(lambda: self.save_to_file())
+                self.menuConfig_scanner.triggered.connect(lambda: self.edit_scanner())
 
         def retranslateUi(self, Splash):
                 _translate = QtCore.QCoreApplication.translate
@@ -147,6 +155,7 @@ class Ui_Splash(QMainWindow):
                 self.menuSave_to_file.setText(_translate("Splash", "Save to file"))
                 self.menuEdit_save_path.setText(_translate("Splash", "Edit save path"))
                 self.menuClear_result.setText(_translate("Splash", "Clear results"))
+                self.menuConfig_scanner.setText(_translate("Splash", "Change scanner config"))
 
         def scan_event(self):
                 host = self.lineEdit.text()
@@ -168,7 +177,7 @@ class Ui_Splash(QMainWindow):
                                 self.scanning_500(host)
         
         def scanning_500(self, host):
-                h_scan = Scanner(host)
+                h_scan = Scanner(host, self.thread_config, self.worker_config)
                 h_scan.start_scanning()
 
                 label_break = QtWidgets.QLabel()
@@ -194,6 +203,10 @@ class Ui_Splash(QMainWindow):
 
                 self.statusBar.showMessage("Finished scanning in " + str(h_scan.time_passed) + " s")
 
+                del h_scan
+
+                
+
         def clear_res_area(self):
                 self.resultArea.removeWidget(self.scrollAreaWidgetContents)
                 self.scrollAreaWidgetContents.deleteLater()
@@ -211,6 +224,15 @@ class Ui_Splash(QMainWindow):
                 txt, confirm = QtWidgets.QInputDialog.getText(self, "Change output path", "Enter new output path")
                 if confirm:
                         self.configurations = str(txt)
+
+        def edit_scanner(self):
+                txt, confirm = QtWidgets.QInputDialog.getText(self, "Change threads", "How many threads to run")
+                if confirm:
+                        self.thread_config = int(txt)
+
+                txt2, confirm2 = QtWidgets.QInputDialog.getText(self, "Change ports", "How many ports to scan")
+                if confirm2:
+                        self.worker_config = int(txt2)
 
         def save_to_file(self):
                 with open(self.configurations, 'w') as f:

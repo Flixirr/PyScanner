@@ -6,7 +6,7 @@ from queue import Queue
 
 
 class Scanner:
-    def __init__(self, host):
+    def __init__(self, host, max_threads, max_workers):
         self.host = host
         self.host_IP = socket.gethostbyname(self.host)
         self.lock = threading.Lock()
@@ -14,6 +14,10 @@ class Scanner:
         self.start_time = time.time()
         self.working_ports = []
         self.time_passed = 0
+
+        self.max_threads = max_threads
+
+        self.max_workers = max_workers
     
     def scan_port(self, port):
         soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -33,12 +37,12 @@ class Scanner:
             self.worker_queue.task_done()
     
     def start_scanning(self):
-        for x in range(100):
+        for x in range(self.max_threads):
             thread_stuff = threading.Thread(target=self.thread_handler)
-            thread_stuff.daemon = True
+            thread_stuff.daemon = False
             thread_stuff.start()
         
-        for worker in range(1, 500):
+        for worker in range(1, self.max_workers):
             self.worker_queue.put(worker)
         
         self.worker_queue.join()
