@@ -39,7 +39,7 @@ class Scanner:
     def start_scanning(self):
         for x in range(self.max_threads):
             thread_stuff = threading.Thread(target=self.thread_handler)
-            thread_stuff.daemon = False
+            thread_stuff.daemon = True
             thread_stuff.start()
         
         for worker in range(1, self.max_workers):
